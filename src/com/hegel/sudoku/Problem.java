@@ -1,7 +1,7 @@
 package com.hegel.sudoku;
 
 public class Problem {
-	static final String[] Issue1 = {
+	static final String[] Issue_1 = {
 			"107000009",
 			"090200040",
 			"000001060",
@@ -13,7 +13,7 @@ public class Problem {
 			"902000006"
 			};
 	
-	static final String[] Issue2 = {
+	static final String[] Issue_2 = {
 			"009701320",
 			"304002000",
 			"800000079",
@@ -24,4 +24,16 @@ public class Problem {
 			"000100902",
 			"091407800"
 			};
+	
+	static final String[] Issue_3 = {
+            "000100030",
+            "065000700",
+            "400673020",
+            "080016000",
+            "900000003",
+            "001000200",
+            "070000000",
+            "009802004",
+            "200007300"
+            };
 }
