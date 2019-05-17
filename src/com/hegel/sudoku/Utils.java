@@ -15,6 +15,11 @@ public class Utils {
         }
     }
 
+    /**
+     * 解析字符串格式的题目，创建包含81个Sobj对象的数组并返回
+     * @param issue 字符串数组
+     * @return  包含81个Sobj对象的一维数组
+     */
     static Sobj[] initAllSobjs(String[] issue) {
         Sobj[] allSobjs = new Sobj[81];
         for (int i = 0; i < 9; i++) {
@@ -26,6 +31,11 @@ public class Utils {
         return allSobjs;
     }
 
+    /**
+     * 将包含81个Sobj对象的一维数组转换为以行序号分隔的二维数组
+     * @param allSobjs  包含81个Sobj对象的一维数组
+     * @return  以行序号分隔的二维数组
+     */
     static Sobj[][] getRowSobjs(Sobj[] allSobjs) {
         Sobj[][] rows = new Sobj[9][9];
         for (Sobj sobj : allSobjs) {
@@ -34,6 +44,11 @@ public class Utils {
         return rows;
     }
 
+    /**
+     * 将包含81个Sobj对象的一维数组转换为以列序号分隔的二维数组
+     * @param allSobjs  包含81个Sobj对象的一维数组
+     * @return  以列序号分隔的二维数组
+     */
     static Sobj[][] getColumnSobjs(Sobj[] allSobjs) {
         Sobj[][] columns = new Sobj[9][9];
         for (Sobj sobj : allSobjs) {
@@ -42,6 +57,11 @@ public class Utils {
         return columns;
     }
 
+    /**
+     * 将包含81个Sobj对象的一维数组转换为以子格序号分隔的二维数组
+     * @param allSobjs  包含81个Sobj对象的一维数组
+     * @return  以子格序号分隔的二维数组
+     */
     static Sobj[][] getGridSobjs(Sobj[] allSobjs) {
         Sobj[][] grids = new Sobj[9][9];
         for (Sobj sobj : allSobjs) {

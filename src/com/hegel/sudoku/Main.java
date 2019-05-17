@@ -5,7 +5,7 @@ public class Main {
     public static void main(String[] args) {
 
         Sudoku sudoku = new Sudoku();
-        sudoku.inputCondition(Problem.Issue_3);
+        sudoku.inputCondition(Problem.Issue_1);
         sudoku.calculate();
 
         String[] result = sudoku.getResult();
@@ -16,7 +16,6 @@ public class Main {
             }
             System.out.println("---result end---");
         }
-        
 
     }
 

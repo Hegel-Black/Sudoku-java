@@ -38,31 +38,57 @@ public class Sudoku {
         columnSobjs = Utils.getColumnSobjs(allSobjs);
         gridSobjs = Utils.getGridSobjs(allSobjs);
         Utils.printSudoku(rowSobjs);
+        countUnknownSobj();
 
-        // Step3. 压缩未定九宫格对象的取值范围
+        // Step3. 循环压缩未知格对象的取值范围
         loopCompress();
         Utils.printSudoku(rowSobjs);
-        System.out.println("isCalculateOver: " + isCalculateOver());
+        System.out.println("Step3. isCalculateOver: " + isCalculateOver());
 
+        // Step4. 循环查找未知格对象的可能值范围中是否存在唯一值
         loopFindUnique();
         Utils.printSudoku(rowSobjs);
-        System.out.println("isCalculateOver: " + isCalculateOver());
-        
+        System.out.println("Step4. isCalculateOver: " + isCalculateOver());
+
+        // Step5. 到了这一步，简单的数独题目已经被解决，但复杂的题目就需要猜测了
         if (isCalculateOver()) {
             result = new String[9];
             int i = 0;
             for (Sobj[] rows : rowSobjs) {
                 String str = "";
                 for (Sobj obj : rows) {
-                    str+=obj.values.get(0).toString();
+                    str += obj.values.get(0).toString();
                 }
                 result[i] = str;
                 i++;
             }
+        } else {
+            System.out.println("开始猜测：");
+            bruteForce();
         }
 
     }
 
+    private void bruteForce() {
+
+    }
+
+    private void guess(int pos, int id) {
+        System.out.println("guess pos = " + pos);
+        Sobj obj = allSobjs[pos];
+        Character temp = obj.values.get(id);
+        obj.values.clear();
+        obj.values.add(temp);
+
+        loopCompress();
+        Utils.printSudoku(rowSobjs);
+        loopFindUnique();
+        Utils.printSudoku(rowSobjs);
+    }
+
+    /**
+     * 按顺序依次对81个格中的未知格进行可能值范围的缩减操作， 若缩减后可能值只有一个，则将其转换为已知格，并跳转到第一个格重新开始；
+     */
     private void loopCompress() {
         int count = 0;
         int i = 0;
@@ -78,7 +104,11 @@ public class Sudoku {
         }
 //        System.out.println("loopCompress count = " + count);
     }
-    
+
+    /**
+     * 按顺序依次对81个格中的未知格进行唯一值查找，若找到唯一值，则调用{@link #loopCompress()}
+     * 对全体未知格进行可能值范围的缩减操作，然后并跳转到第一个格重新开始；
+     */
     private void loopFindUnique() {
         int count = 0;
         int i = 0;
@@ -86,7 +116,8 @@ public class Sudoku {
             Sobj obj = allSobjs[i];
             boolean bl = findUniqueForUnknownSobj(obj);
             if (bl) {
-//                System.out.println("(" + obj.x + ", " + obj.y + ") findUniqueForUnknownSobj:" + obj.values.toString());
+                // System.out.println("(" + obj.x + ", " + obj.y + ") findUniqueForUnknownSobj:"
+                // + obj.values.toString());
                 loopCompress();
                 i = 0;
                 count++;
@@ -98,7 +129,7 @@ public class Sudoku {
     }
 
     /**
-     * 在未知格的可能值中查找是否存在一个值，在它所属的行九格或列九格或子九格是唯一的
+     * 在未知格的可能值中查找是否存在一个值，在它所属的行九格或列九格或子九格是唯一的， 若找到则将其转化为已知格
      * 
      * @param sobj
      *            未知格实例
@@ -116,7 +147,7 @@ public class Sudoku {
             }
             if (rowTemp.size() == 1) {
                 sobj.values = rowTemp;
-                sobj.checkOnlyValue();
+                sobj.checkValues();
                 return true;
             }
             // 在列九格中查找
@@ -128,7 +159,7 @@ public class Sudoku {
             }
             if (columnTemp.size() == 1) {
                 sobj.values = columnTemp;
-                sobj.checkOnlyValue();
+                sobj.checkValues();
                 return true;
             }
             // 在子九格中查找
@@ -140,7 +171,7 @@ public class Sudoku {
             }
             if (gridTemp.size() == 1) {
                 sobj.values = gridTemp;
-                sobj.checkOnlyValue();
+                sobj.checkValues();
                 return true;
             }
         }
@@ -149,15 +180,15 @@ public class Sudoku {
     }
 
     /**
-     * 缩减未知格的可能值范围，即在[1-9]的范围内移除行九格、列九格、子九格中已知格的值
+     * 缩减未知格的可能值范围，即在[1-9]的范围内移除行九格、列九格、子九格中已知格的值， 若可能值只有一个，则将其转化为已知格
      * 
      * @param sobj
      *            未知格实例
-     * @return 如果缩减后的可能值是唯一值，则返回true，否则返回false
+     * @return 如果缩减后的可能值只有一个，则返回true，否则返回false
      */
     private boolean compressUnknownSobj(Sobj sobj) {
         boolean bl = false;
-        if (!sobj.isOnly) {
+        if (sobj.values.size() > 1) {
             for (Sobj robj : rowSobjs[sobj.x]) {
                 if (robj.isOnly) {
                     sobj.values.remove(robj.values.get(0));
@@ -173,22 +204,24 @@ public class Sudoku {
                     sobj.values.remove(gobj.values.get(0));
                 }
             }
-
-            sobj.checkOnlyValue();
+            sobj.checkValues();
             if (sobj.isOnly) {
                 bl = true;
-//                System.out.println("(" + sobj.x + ", " + sobj.y + ") compressUnknownSobj:" + sobj.values.toString());
             }
         }
 
         return bl;
     }
 
+    /**
+     * 判断题目格式是否正确， 正确的条件格式是一个字符串数组，内含9个字符串，每个字符串长度也为9，字符为[0-9]
+     * 
+     * @return
+     */
     private boolean isConditionFormatRight() {
         boolean bl = false;
 
         if (condition != null) {
-            // 正确的条件格式是一个字符串数组，内含9个字符串，每个字符串长度也为9，字符为[0-9]
             if (condition.length == 9) {
                 int checkChar = 0;
                 loop: for (int i = 0; i < 9; i++) {
@@ -224,16 +257,24 @@ public class Sudoku {
         return bl;
     }
     
-    private boolean isCalculateOver() {
-        boolean bl = true;
-        for (Sobj obj:allSobjs) {
-            if (!obj.isOnly) {
-                bl = false;
-                break;
+    private int countUnknownSobj() {
+        int unknown = 0;
+        for (Sobj obj : allSobjs) {
+            if (obj.values.size() != 1) {
+                unknown++;
             }
         }
-        
-        return bl;
+        System.out.println("未知格数量：" + unknown);
+        return unknown;
+    }
+
+    /**
+     * 判断题目是否计算完毕
+     * 
+     * @return 若所有的格都是已知格则返回true，否则返回false
+     */
+    private boolean isCalculateOver() {
+        return countUnknownSobj() == allSobjs.length;
     }
 
 }
