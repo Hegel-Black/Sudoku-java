@@ -50,27 +50,86 @@ public class Sudoku {
         Utils.printSudoku(rowSobjs);
         System.out.println("Step4. isCalculateOver: " + isCalculateOver());
 
-        // Step5. 到了这一步，简单的数独题目已经被解决，但复杂的题目就需要猜测了
+        // Step5. 到了这一步，简单的数独题目已经被解决，如果还未解决则使用数对法
         if (isCalculateOver()) {
-            result = new String[9];
-            int i = 0;
-            for (Sobj[] rows : rowSobjs) {
-                String str = "";
-                for (Sobj obj : rows) {
-                    str += obj.values.get(0).toString();
-                }
-                result[i] = str;
-                i++;
-            }
+        	updateResult(); 
         } else {
-            System.out.println("开始猜测：");
-            bruteForce();
+        	findPairForGrid();
         }
 
     }
 
-    private void bruteForce() {
-
+    private void findPairForGrid() {
+		// TODO Auto-generated method stub
+    	Sobj p1 = null, p2 = null;
+    	for (Sobj[] grids : gridSobjs) {
+    		for (Sobj sobj : grids) {
+    			if (sobj.values.size() == 2) {
+    				
+    				if (p1 == null) {
+    					p1  = sobj;
+					} else {
+						p2 = sobj;
+						break;
+					}
+				}
+    		}
+    		if (p1 != null && p2 != null) {
+    			if(isValuesSame(p1, p2)) {
+    				// 使用数对排除法
+    				if(compressSobjForGridPair(p1)) {
+    					loopCompress();
+    					loopFindUnique();
+    					Utils.printSudoku(rowSobjs);
+    				}
+    			}
+			}
+    		
+    		p1 = null;
+    		p2 = null;
+    	}
+	}
+    
+    private boolean compressSobjForGridPair(Sobj obj) {
+    	boolean bl = false;
+    	for (Sobj sobj : gridSobjs[obj.grid]) {
+    		if (sobj.values.size() > 2) {
+				sobj.values.removeAll(obj.values);
+				sobj.checkValues();
+				if (sobj.isOnly) {
+					bl = true;
+				}
+			}
+    	}
+    	return bl;
+    }
+    
+    private boolean isValuesSame(Sobj p1, Sobj p2) {
+		boolean bl = false;
+		ArrayList<Character> v1 = new ArrayList<>(p1.values);
+		ArrayList<Character> v2 = new ArrayList<>(p2.values);
+		if (v1.size() == v2.size()) {
+			v1.removeAll(v2);
+			if (v1.isEmpty()) {
+				bl = true;
+				System.out.println("p1 = "+p1.toString());
+        		System.out.println("p2 = "+p2.toString());
+			}
+		}
+		return bl;
+	}
+    
+	private void updateResult() {
+    	result = new String[9];
+        int i = 0;
+        for (Sobj[] rows : rowSobjs) {
+            String str = "";
+            for (Sobj obj : rows) {
+                str += obj.values.get(0).toString();
+            }
+            result[i] = str;
+            i++;
+        }
     }
 
     private void guess(int pos, int id) {
